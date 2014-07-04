@@ -18,7 +18,7 @@ def save_user():
 	try:
 	  auth.get_access_token(verifier)
 	  with open(USER_FILE, 'wb') as f:
-	    cPickle.dump(auth.access_token, f, cPickle.HIGHEST_PROTOCOL)
+	    cPickle.dump(auth, f, cPickle.HIGHEST_PROTOCOL)
 	except tweepy.TweepError:
 	  print 'Error! Failed to get access token.'
 	return auth
@@ -26,13 +26,11 @@ def save_user():
 def main():
 	try:
 		with open(USER_FILE, 'r') as f:
-		  access_token = cPickle.load(f)
-		  auth = tweepy.OAuthHandler(API_KEY, API_SECRET,'http://sidverma.net/tt/callback')
-		  auth.set_access_token(access_token.key, access_token.secret)
+		  auth = cPickle.load(f)
 	except:
 		auth = save_user()
 	api = tweepy.API(auth)
 
 if __name__ == '__main__':
   main()
-  
+
