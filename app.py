@@ -12,13 +12,14 @@ OPTIONS_FILE = 'options.pkl'
 
 @click.group(invoke_without_command=True)
 @click.pass_context
-def main(context):
-  """A CLI to Twitter with support to display, open and compose tweeets"""
+@click.option('-n', default=25, help='The index number of the tweet to mark as Favorite.',required = False)
+def main(context,n):
+  """A CLI to Twitter with support to display, open and compose tweeets."""
   if context.invoked_subcommand is None:
-    get_tweets()
+    get_tweets(n)
 
 def login():
-  """Authenticate and save the user"""
+  """Authenticate and save the user."""
   try:
     auth=load_user()
   except:
@@ -26,22 +27,22 @@ def login():
   return tweepy.API(auth)
   
 def load_options():
-  """Load the application options from file"""
+  """Load the application options from file."""
   with open(OPTIONS_FILE, 'r') as f:
     return cPickle.load(f)
 
 def save_options(options):
-  """Save the application options in a file"""
+  """Save the application options in a file."""
   with open(OPTIONS_FILE, 'wb') as f:
     cPickle.dump(options, f, cPickle.HIGHEST_PROTOCOL)
 
 def load_user():
-  """Load the user authentication details file"""
+  """Load the user authentication details file."""
   with open(USER_FILE, 'r') as f:
     return cPickle.load(f)
 
 def save_user():
-  """Save the user authentication details in a file"""
+  """Save the user authentication details in a file."""
   auth = tweepy.OAuthHandler(API_KEY, API_SECRET,'http://sidverma.net/tt/callback')
   try:
     redirect_url = auth.get_authorization_url()
@@ -58,18 +59,23 @@ def save_user():
   return auth
 
 def load_tweets():
-  """Load the last saved tweets details file"""
+  """Load the last saved tweets details file."""
   with open(TWEETS_FILE, 'r') as f:
     return cPickle.load(f)
 
 def save_tweets(tweets):
-  """Save the user loaded tweets in a file"""
+  """Save the user loaded tweets in a file."""
   with open(TWEETS_FILE, 'wb') as f:
     cPickle.dump(tweets, f, cPickle.HIGHEST_PROTOCOL)
 
+def get_tweet_id(n):
+  """Get the twitter id of a tweet, when supplied with the index."""
+  tweets = load_tweets();
+  tweet = tweets[n-1]
+  return {'author':tweet.author.screen_name,'id':tweet.id}
+
 def print_home_timeline(tweets):
-  """Print the home timeline of the user"""
-  save_tweets(tweets)
+  """Print the home timeline of the user."""
   s=""
   for i,tweet in enumerate(tweets):  
     s += ((click.style('[%d] ' %(i+1), bold=True, fg="blue") + 
@@ -78,48 +84,77 @@ def print_home_timeline(tweets):
   click.echo_via_pager(s)
 
 @main.command()
-@click.option('--media', is_flag=True, help="Compose a tweet contaiing a media")
+@click.option('--media', is_flag=True, help="Compose a tweet containing a media.")
 def compose(media):
-  """Composes a tweet"""
+  """Composes a tweet."""
   api = login()
-  if media:
-    media = click.prompt('Enter the media path').encode('utf_8')
-    media = media.strip(' ')
-    media = media.strip('\'')
-    x=open(media,'r')
-    tweet = click.prompt('Enter the tweet')
-    api.update_with_media(filename=x.name,status=tweet,file=x)
-  else:
-    tweet = click.prompt('Enter the tweet')
-    api.update_status(tweet)
-  click.echo('Your tweet has been published')
+  try:
+    if media:
+      media = click.prompt('Enter the media path').encode('utf_8')
+      media = media.strip(' ')
+      media = media.strip('\'')
+      x=open(media,'r')
+      tweet = click.prompt('Enter the tweet')
+      api.update_with_media(filename=x.name,status=tweet,file=x)
+    else:
+      tweet = click.prompt('Enter the tweet')
+      api.update_status(tweet)
+    click.echo('Your tweet has been published')
+  except Exception as e:
+    click.secho('Error - %s' %e, fg="red")
 
 def reply():
-  """Retweet to a given tweet"""
+  """Reply to a given tweet."""
 
 @main.command()
-@click.option('-n', default=1)
+@click.option('-n', default=1, help='The index number of the tweet to Retweet.')
 def rt(n):
-  """Retweet a given tweet"""
-  print n
+  """Retweet a given tweet."""
+  api = login()
+  id=get_tweet_id(n)['id']
+  try:
+    api.retweet(id)
+    click.echo('Retweeted')
+  except Exception as e:
+    click.secho('Error - %s' %e, fg="red")
   
-def favorite():
-  """Favorite a tweet"""
+@main.command()
+@click.option('-n', default=1, help='The index number of the tweet to mark as Favorite.')
+def fav(n):
+  """Favorite a tweet."""
+  api = login()
+  id=get_tweet_id(n)['id']
+  try:
+    api.create_favorite(id)
+    click.echo('Marked as Favorite')
+  except Exception as e:
+    click.secho('Error - %s' %e, fg="red")
 
-def browse_tweet():
-  """Opens the tweet in web browser"""
+@main.command()
+@click.option('-n', default=1, help='The index number of the tweet to open.')
+def browse(n):
+  """Opens the tweet in web browser."""
+  details = get_tweet_id(n)
+  link = 'http://twitter.com/%s/status/%d' %(details['author'], details['id'])
+  try:
+    click.launch(link)
+    click.echo('Opening link %s' %link)
+  except Exception as e:
+    click.secho('Error - %s' %e, fg="red")
 
 @main.command()
 def logout():
-  """Logout from the application"""
+  """Logout from the application."""
   os.remove('USER_FILE')
   click.echo('The user is logged out')
 
-def get_tweets():
-  """Display the user's Twiter feed"""
+def get_tweets(n):
+  """Display the user's Twiter feed."""
   api = login()
   try:
-    print_home_timeline(api.home_timeline(count=25))
+    tweets = api.home_timeline(count=n)
+    save_tweets(tweets)
+    print_home_timeline(tweets)
   except Exception as e:
     click.secho('Error - Unable to connect to Twitter.\n%s' %e, fg="red")
 
