@@ -17,8 +17,8 @@ def main(context):
   if context.invoked_subcommand is None:
     get_tweets()
 
-def authenticate():
-  """Authenticate the user"""
+def login():
+  """Authenticate and save the user"""
   try:
     auth=load_user()
   except:
@@ -57,10 +57,6 @@ def save_user():
     click.secho('Error - Failed to get access token.', fg="red")
   return auth
 
-def delete_user():
-  """Remove the user file"""
-  os.remove('USER_FILE')
-
 def load_tweets():
   """Load the last saved tweets details file"""
   with open(TWEETS_FILE, 'r') as f:
@@ -82,10 +78,10 @@ def print_home_timeline(tweets):
   click.echo_via_pager(s)
 
 @main.command()
-@click.option('--media', is_flag=True)
+@click.option('--media', is_flag=True, help="Compose a tweet contaiing a media")
 def compose(media):
   """Composes a tweet"""
-  api = authenticate()
+  api = login()
   if media:
     media = click.prompt('Enter the media path').encode('utf_8')
     media = media.strip(' ')
@@ -101,18 +97,27 @@ def compose(media):
 def reply():
   """Retweet to a given tweet"""
 
-def retweet():
+@main.command()
+@click.option('-n', default=1)
+def rt(n):
   """Retweet a given tweet"""
-
+  print n
+  
 def favorite():
   """Favorite a tweet"""
 
 def browse_tweet():
   """Opens the tweet in web browser"""
 
+@main.command()
+def logout():
+  """Logout from the application"""
+  os.remove('USER_FILE')
+  click.echo('The user is logged out')
+
 def get_tweets():
   """Display the user's Twiter feed"""
-  api = authenticate()
+  api = login()
   try:
     print_home_timeline(api.home_timeline(count=25))
   except Exception as e:
