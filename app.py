@@ -77,24 +77,24 @@ def print_home_timeline(tweets,pager):
   else:
     click.echo(s)
 
-def update_status(media,n=False):
+def update_status(photo,n=False):
   api = login()
   try:
-    if media:
-      media = click.prompt('Enter the media path').encode('utf_8')
-      media = media.strip(' ')
-      media = media.strip('\'')
-      x=open(media,'r')
+    if photo:
+      photo = click.prompt('Enter the photo path').encode('utf_8')
+      photo = photo.strip(' ')
+      photo = photo.strip('\'')
+      x=open(photo,'r')
       if n:
         reply_to = get_tweet_id(n)
-        tweet = click.prompt('Enter the text to go along with the media',default='@%s' %reply_to['author'])
+        tweet = click.prompt('Enter the text to go along with the photo',default='@%s' %reply_to['author'])
         if tweet.find('@%s ' %reply_to['author']) >=0:
           pass
         else:
           tweet = '@%s ' %reply_to['author'] + tweet
         api.update_with_media(filename=x.name,status=tweet,file=x,in_reply_to_status_id=reply_to['id'])
       else:
-        tweet = click.prompt('Enter the text to go along with the media',default='')
+        tweet = click.prompt('Enter the text to go along with the photo',default='')
         api.update_with_media(filename=x.name,status=tweet,file=x)        
     else:
       if n:
@@ -113,17 +113,17 @@ def update_status(media,n=False):
     click.secho('Error - %s' %e, fg="red")
 
 @main.command()
-@click.option('--media', is_flag=True, help="Compose a tweet containing a media.")
-def compose(media):
+@click.option('--photo', is_flag=True, help="Compose a tweet containing a photo.")
+def compose(photo):
   """Composes a tweet."""
-  update_status(media,False)
+  update_status(photo,False)
   
 @main.command()
-@click.option('--media', is_flag=True, help="Reply with a tweet containing a media.")
+@click.option('--photo', is_flag=True, help="Reply with a tweet containing a photo.")
 @click.argument('index',type=int)
-def reply(media,index):
+def reply(photo,index):
   """Reply to a given tweet."""
-  update_status(media,index)
+  update_status(photo,index)
 
 @main.command()
 @click.argument('index',type=int)
