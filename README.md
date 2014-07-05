@@ -12,12 +12,8 @@ $ git clone https://github.com/mavidser/terminal-twitter.git
 $ cd terminal-twitter
 ```
 
-Create a file `keys.py` in the folder and insert your API keys by creating a new app [here](https://dev.twitter.com/apps) and give read and write permissions to the application.
+_Optional Step:_ It is highly recommended that you replace the keys in `main.py` with your own keys, which you can get by [creating an app on Twitter](https://dev.twitter.com/apps) and setting the permissions to Read/Write.
 
-```python
-API_KEY = '1234567890' #Replace with your API Key
-API_SECRET = '1234567890' #Replace with your API Secret
-```
 Now run setup.py file.
 ```bash
 $ python setup.py install
