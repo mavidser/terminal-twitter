@@ -8,15 +8,15 @@ import os
 
 USER_FILE = 'user.pkl'
 TWEETS_FILE = 'tweets.pkl'
-OPTIONS_FILE = 'options.pkl'
 
 @click.group(invoke_without_command=True)
+@click.option('-n', default=25, help='The number of tweets to display (should be less than 200).',required = False)
+@click.option('--pager/--no-pager', default=False, help='Display tweets via pager (less). Defaults to pager.')
 @click.pass_context
-@click.option('-n', default=25, help='The index number of the tweet to mark as Favorite.',required = False)
-def main(context,n):
+def main(context,n,pager):
   """A CLI to Twitter with support to display, open and compose tweeets."""
   if context.invoked_subcommand is None:
-    get_tweets(n)
+    get_tweets(n,pager)
 
 def login():
   """Authenticate and save the user."""
@@ -26,16 +26,6 @@ def login():
     auth = save_user()
   return tweepy.API(auth)
   
-def load_options():
-  """Load the application options from file."""
-  with open(OPTIONS_FILE, 'r') as f:
-    return cPickle.load(f)
-
-def save_options(options):
-  """Save the application options in a file."""
-  with open(OPTIONS_FILE, 'wb') as f:
-    cPickle.dump(options, f, cPickle.HIGHEST_PROTOCOL)
-
 def load_user():
   """Load the user authentication details file."""
   with open(USER_FILE, 'r') as f:
@@ -74,14 +64,17 @@ def get_tweet_id(n):
   tweet = tweets[n-1]
   return {'author':tweet.author.screen_name,'id':tweet.id}
 
-def print_home_timeline(tweets):
+def print_home_timeline(tweets,pager):
   """Print the home timeline of the user."""
   s=""
   for i,tweet in enumerate(tweets):  
     s += ((click.style('[%d] ' %(i+1), bold=True, fg="blue") + 
            click.style('@%s - ' %tweet.author.screen_name, bold=True, fg="cyan") + 
            click.style('%s' %tweet.text)).encode('utf_8')+'\n\n')
-  click.echo_via_pager(s)
+  if pager:
+    click.echo_via_pager(s)
+  else:
+    click.echo(s)
 
 @main.command()
 @click.option('--media', is_flag=True, help="Compose a tweet containing a media.")
@@ -148,15 +141,15 @@ def logout():
   os.remove('USER_FILE')
   click.echo('The user is logged out')
 
-def get_tweets(n):
+def get_tweets(n,pager):
   """Display the user's Twiter feed."""
   api = login()
   try:
     tweets = api.home_timeline(count=n)
     save_tweets(tweets)
-    print_home_timeline(tweets)
+    print_home_timeline(tweets,pager)
   except Exception as e:
-    click.secho('Error - Unable to connect to Twitter.\n%s' %e, fg="red")
+    click.secho('Error - %s' %e, fg="red")
 
 if __name__ == '__main__':
   main()
