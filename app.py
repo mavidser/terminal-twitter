@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 from keys import *
 import webbrowser
 import tweepy
@@ -10,8 +11,8 @@ USER_FILE = 'user.pkl'
 TWEETS_FILE = 'tweets.pkl'
 
 @click.group(invoke_without_command=True)
-@click.option('-n', default=25, help='The number of tweets to display (should be less than 200).',required = False)
-@click.option('--pager/--no-pager', default=False, help='Display tweets via pager (less). Defaults to pager.')
+@click.option('--num','-n', default=25, help='The number of tweets to display (should be less than 200). Defaults to 25.', required = False)
+@click.option('--pager/--no-pager', default=True, help='Display tweets via pager (less). Defaults to pager.')
 @click.pass_context
 def main(context,n,pager):
   """A CLI to Twitter with support to display, open and compose tweeets."""
@@ -76,10 +77,7 @@ def print_home_timeline(tweets,pager):
   else:
     click.echo(s)
 
-@main.command()
-@click.option('--media', is_flag=True, help="Compose a tweet containing a media.")
-def compose(media):
-  """Composes a tweet."""
+def update_status(media,n=False):
   api = login()
   try:
     if media:
@@ -87,24 +85,52 @@ def compose(media):
       media = media.strip(' ')
       media = media.strip('\'')
       x=open(media,'r')
-      tweet = click.prompt('Enter the tweet')
-      api.update_with_media(filename=x.name,status=tweet,file=x)
+      if n:
+        reply_to = get_tweet_id(n)
+        tweet = click.prompt('Enter the text to go along with the media',default='@%s' %reply_to['author'])
+        if tweet.find('@%s ' %reply_to['author']) >=0:
+          pass
+        else:
+          tweet = '@%s ' %reply_to['author'] + tweet
+        api.update_with_media(filename=x.name,status=tweet,file=x,in_reply_to_status_id=reply_to['id'])
+      else:
+        tweet = click.prompt('Enter the text to go along with the media',default='')
+        api.update_with_media(filename=x.name,status=tweet,file=x)        
     else:
-      tweet = click.prompt('Enter the tweet')
-      api.update_status(tweet)
+      if n:
+        reply_to = get_tweet_id(n)
+        tweet = click.prompt('Enter the reply to @%s'%reply_to['author'])
+        if tweet.find('@%s ' %reply_to['author']) >=0:
+          pass
+        else:
+          tweet = '@%s ' %reply_to['author'] + tweet
+        api.update_status(status=tweet,in_reply_to_status_id=reply_to['id'])
+      else:
+        tweet = click.prompt('Enter the tweet')
+        api.update_status(tweet)
     click.echo('Your tweet has been published')
   except Exception as e:
     click.secho('Error - %s' %e, fg="red")
 
-def reply():
+@main.command()
+@click.option('--media', is_flag=True, help="Compose a tweet containing a media.")
+def compose(media):
+  """Composes a tweet."""
+  update_status(media,False)
+  
+@main.command()
+@click.option('--media', is_flag=True, help="Reply with a tweet containing a media.")
+@click.argument('index',type=int)
+def reply(media,index):
   """Reply to a given tweet."""
+  update_status(media,index)
 
 @main.command()
-@click.option('-n', default=1, help='The index number of the tweet to Retweet.')
-def rt(n):
+@click.argument('index',type=int)
+def rt(index):
   """Retweet a given tweet."""
   api = login()
-  id=get_tweet_id(n)['id']
+  id=get_tweet_id(index)['id']
   try:
     api.retweet(id)
     click.echo('Retweeted')
@@ -112,11 +138,11 @@ def rt(n):
     click.secho('Error - %s' %e, fg="red")
   
 @main.command()
-@click.option('-n', default=1, help='The index number of the tweet to mark as Favorite.')
-def fav(n):
+@click.argument('index',type=int)
+def fav(index):
   """Favorite a tweet."""
   api = login()
-  id=get_tweet_id(n)['id']
+  id=get_tweet_id(index)['id']
   try:
     api.create_favorite(id)
     click.echo('Marked as Favorite')
@@ -124,10 +150,10 @@ def fav(n):
     click.secho('Error - %s' %e, fg="red")
 
 @main.command()
-@click.option('-n', default=1, help='The index number of the tweet to open.')
-def browse(n):
+@click.argument('index',type=int)
+def browse(index):
   """Opens the tweet in web browser."""
-  details = get_tweet_id(n)
+  details = get_tweet_id(index)
   link = 'http://twitter.com/%s/status/%d' %(details['author'], details['id'])
   try:
     click.launch(link)
