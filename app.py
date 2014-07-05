@@ -14,10 +14,10 @@ TWEETS_FILE = 'tweets.pkl'
 @click.option('--num','-n', default=25, help='The number of tweets to display (should be less than 200). Defaults to 25.', required = False)
 @click.option('--pager/--no-pager', default=True, help='Display tweets via pager (less). Defaults to pager.')
 @click.pass_context
-def main(context,n,pager):
+def main(context,num,pager):
   """A CLI to Twitter with support to display, open and compose tweeets."""
   if context.invoked_subcommand is None:
-    get_tweets(n,pager)
+    get_tweets(num,pager)
 
 def login():
   """Authenticate and save the user."""
@@ -39,7 +39,7 @@ def save_user():
     redirect_url = auth.get_authorization_url()
   except tweepy.TweepError:
     click.secho('Error - Failed to get request token.', fg="red")
-  print redirect_url
+  click.echo('Open this link in your web browser:\n'+redirect_url)
   verifier = raw_input('Verifier:')
   try:
     auth.get_access_token(verifier)
