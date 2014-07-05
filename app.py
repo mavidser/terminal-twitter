@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+ #!/usr/bin/env python
 
 from keys import *
 import webbrowser
@@ -34,13 +34,13 @@ def load_user():
 
 def save_user():
   """Save the user authentication details in a file."""
-  auth = tweepy.OAuthHandler(API_KEY, API_SECRET,'http://sidverma.net/tt/callback')
+  auth = tweepy.OAuthHandler(API_KEY, API_SECRET)
   try:
     redirect_url = auth.get_authorization_url()
   except tweepy.TweepError:
     click.secho('Error - Failed to get request token.', fg="red")
   click.echo('Open this link in your web browser:\n'+redirect_url)
-  verifier = raw_input('Verifier:')
+  verifier = raw_input('Enter the displayed PIN:')
   try:
     auth.get_access_token(verifier)
     with open(USER_FILE, 'wb') as f:
@@ -164,7 +164,7 @@ def browse(index):
 @main.command()
 def logout():
   """Logout from the application."""
-  os.remove('USER_FILE')
+  os.remove(USER_FILE)
   click.echo('The user is logged out')
 
 def get_tweets(n,pager):
