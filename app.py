@@ -92,7 +92,7 @@ def compose(media):
     media = media.strip('\'')
     x=open(media,'r')
     tweet = click.prompt('Enter the tweet')
-    api.update_with_media(filename='a.png',status=tweet,file=x)
+    api.update_with_media(filename=x.name,status=tweet,file=x)
   else:
     tweet = click.prompt('Enter the tweet')
     api.update_status(tweet)
