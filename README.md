@@ -1,6 +1,6 @@
 Terminal Twitter
 ================
-A Twitter CLI for hackers
+A Twitter CLI for hackers.
 
 ![](http://sidverma.net/terminal-twitter/images/screenshot.png)
 
@@ -12,7 +12,7 @@ $ git clone https://github.com/mavidser/terminal-twitter.git
 $ cd terminal-twitter
 ```
 
-_Optional Step:_ It is highly recommended that you replace the keys in `main.py` with your own keys, which you can get by [creating an app on Twitter](https://dev.twitter.com/apps) and setting the permissions to Read/Write.
+_Optional Step:_ It is highly recommended that you replace the keys in `keys.py` with your own keys, which you can get by [creating an app on Twitter](https://dev.twitter.com/apps) and setting the permissions to Read/Write.
 
 Now run setup.py file.
 ```bash
@@ -21,7 +21,7 @@ $ python setup.py install
 
 _Note:_ Windows users should install colorama for colored output.
 ```bash
-$ pip install colorama 
+$ pip install colorama
 ```
 
 Usage
@@ -30,7 +30,7 @@ Usage
 ### Display your twitter feed
 
 ```bash
-$ tt        # Use --no-pager flag if you want the tweets in a 
+$ tt        # Use --no-pager flag if you want the tweets in a
             # contiuous output instead of a pager.
 ```
 
@@ -61,7 +61,7 @@ $ tt browse 5  # Opens the tweet on index 5
 ### Reply to a tweet
 
 ```bash
-$ tt reply 5  # Replies to the tweet on index 5. 
+$ tt reply 5  # Replies to the tweet on index 5.
               # Use --photo flag to reply with a photo.
 ```
 
