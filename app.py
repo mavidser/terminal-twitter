@@ -1,6 +1,8 @@
  #!/usr/bin/env python
 
 from keys import *
+from sys import platform as OPERATING_SYSTEM
+import errno
 import webbrowser
 import tweepy
 import cPickle
@@ -37,8 +39,8 @@ def save_user():
   auth = tweepy.OAuthHandler(API_KEY, API_SECRET)
   try:
     redirect_url = auth.get_authorization_url()
-  except tweepy.TweepError:
-    click.secho('Error - Failed to get request token.', fg="red")
+  except tweepy.TweepError as e:
+    click.secho('Error - Failed to get request token. %s' %e, fg="red")
   click.echo('Open this link in your web browser:\n'+redirect_url)
   verifier = raw_input('Enter the displayed PIN:')
   try:
@@ -176,6 +178,25 @@ def get_tweets(n,pager):
     print_home_timeline(tweets,pager)
   except Exception as e:
     click.secho('Error - %s' %e, fg="red")
+
+def set_file_path(path):
+    try:
+      os.makedirs(path)
+    except OSError as e:
+      if (e.errno == errno.EEXIST and os.path.isdir(path)) or path == '':
+        pass
+      else:
+        click.secho('Error - %s' %e, fg="red")
+    return os.path.join(path,USER_FILE),os.path.join(path,TWEETS_FILE)
+
+path=''
+if OPERATING_SYSTEM == "linux" or OPERATING_SYSTEM == "linux2":
+  path = os.path.expandvars('$HOME/.local/share/terminal-twitter/')
+elif OPERATING_SYSTEM == "darwin":
+  path = os.path.expandvars('$HOME/Library/Application Support/terminal-twitter/')
+elif OPERATING_SYSTEM == "win32":
+  path = os.path.expandvars('%APPDATA%/terminal-twitter/')
+USER_FILE, TWEETS_FILE = set_file_path(path)
 
 if __name__ == '__main__':
   main()
