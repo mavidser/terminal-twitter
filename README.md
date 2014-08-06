@@ -19,10 +19,7 @@ Now run setup.py file.
 $ python setup.py install
 ```
 
-_Note:_ Windows users should install colorama for colored output.
-```bash
-$ pip install colorama
-```
+_Note:_ Needs Python 2.7 to run.
 
 Usage
 ====
