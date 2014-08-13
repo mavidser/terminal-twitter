@@ -1,9 +1,15 @@
- #!/usr/bin/env python
+"""
+Leave blank for the current/default settings.
+
+1. Enter the Twitter API key.
+2. Enter the Twitter API Secret.
+3. Use pager or not?
+"""
+#!/usr/bin/env python
 
 from keys import *
 from sys import platform as OPERATING_SYSTEM
 import errno
-import webbrowser
 import tweepy
 import cPickle
 import click
@@ -11,10 +17,11 @@ import os
 
 USER_FILE = 'user.pkl'
 TWEETS_FILE = 'tweets.pkl'
+CONFIG_FILE = 'users.pkl'
 
 @click.group(invoke_without_command=True)
 @click.option('--num','-n', default=25, help='The number of tweets to display (should be less than 200). Defaults to 25.', required = False)
-@click.option('--pager/--no-pager', default=True, help='Display tweets via pager (less). Defaults to pager.')
+@click.option('--pager/--no-pager', default=False, help='Display tweets via pager (less). Defaults to pager.')
 @click.pass_context
 def main(context,num,pager):
   """A CLI to Twitter with support to display, open and compose tweeets."""
@@ -169,6 +176,15 @@ def logout():
   os.remove(USER_FILE)
   click.echo('The user is logged out')
 
+@main.command()
+def setup():
+  """Set the configurations."""
+  try:
+    api.retweet(id)
+    click.echo('Retweeted')
+  except Exception as e:
+    click.secho('Error - %s' %e, fg="red")
+
 def get_tweets(n,pager):
   """Display the user's Twiter feed."""
   api = login()
@@ -180,14 +196,14 @@ def get_tweets(n,pager):
     click.secho('Error - %s' %e, fg="red")
 
 def set_file_path(path):
-    try:
-      os.makedirs(path)
-    except OSError as e:
-      if (e.errno == errno.EEXIST and os.path.isdir(path)) or path == '':
-        pass
-      else:
-        click.secho('Error - %s' %e, fg="red")
-    return os.path.join(path,USER_FILE),os.path.join(path,TWEETS_FILE)
+  try:
+    os.makedirs(path)
+  except OSError as e:
+    if (e.errno == errno.EEXIST and os.path.isdir(path)) or path == '':
+      pass
+    else:
+      click.secho('Error - %s' %e, fg="red")
+  return os.path.join(path,USER_FILE),os.path.join(path,TWEETS_FILE),os.path.join(path,CONFIG_FILE)
 
 path=''
 if OPERATING_SYSTEM == "linux" or OPERATING_SYSTEM == "linux2":
@@ -196,7 +212,7 @@ elif OPERATING_SYSTEM == "darwin":
   path = os.path.expandvars('$HOME/Library/Application Support/terminal-twitter/')
 elif OPERATING_SYSTEM == "win32":
   path = os.path.expandvars('%APPDATA%/terminal-twitter/')
-USER_FILE, TWEETS_FILE = set_file_path(path)
+USER_FILE, TWEETS_FILE, CONFIG_FILE = set_file_path(path)
 
 if __name__ == '__main__':
   main()
