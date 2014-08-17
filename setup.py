@@ -5,13 +5,13 @@ from sys import platform as OPERATING_SYSTEM
 
 if OPERATING_SYSTEM == "win32":
   packages = [
-    'click==2.4',
+    'click==2.6',
     'tweepy==2.3.0',
     'colorama==0.3.1'
   ]
 else:
   packages = [
-    'click==2.4',
+    'click==2.6',
     'tweepy==2.3.0'
   ]
 

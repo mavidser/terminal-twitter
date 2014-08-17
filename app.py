@@ -21,7 +21,7 @@ CONFIG_FILE = 'users.pkl'
 
 @click.group(invoke_without_command=True)
 @click.option('--num','-n', default=25, help='The number of tweets to display (should be less than 200). Defaults to 25.', required = False)
-@click.option('--pager/--no-pager', default=False, help='Display tweets via pager (less). Defaults to pager.')
+@click.option('--pager/--no-pager', default=True, help='Display tweets via pager (less). Defaults to pager.')
 @click.pass_context
 def main(context,num,pager):
   """A CLI to Twitter with support to display, open and compose tweeets."""
@@ -179,8 +179,11 @@ def logout():
 @main.command()
 def setup():
   """Set the configurations."""
+  apikey = click.prompt('Enter the API key')
+  apisecret = click.prompt('Enter the API secret')
+  pager = click.prompt('Turn on pager? (y/N)')
   try:
-    api.retweet(id)
+    # api.retweet(id)
     click.echo('Retweeted')
   except Exception as e:
     click.secho('Error - %s' %e, fg="red")
