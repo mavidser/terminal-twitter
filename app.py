@@ -1,13 +1,5 @@
-"""
-Leave blank for the current/default settings.
-
-1. Enter the Twitter API key.
-2. Enter the Twitter API Secret.
-3. Use pager or not?
-"""
 #!/usr/bin/env python
 
-from keys import *
 from sys import platform as OPERATING_SYSTEM
 import errno
 import tweepy
@@ -18,6 +10,10 @@ import os
 USER_FILE = 'user.pkl'
 TWEETS_FILE = 'tweets.pkl'
 CONFIG_FILE = 'users.pkl'
+
+#Sample Keys
+API_KEY = 'UN5oKvd5GRVmhc8n5TaOCtqtJ'
+API_SECRET = 'ZRTv5uWfu3zObcJg1d3dEQbibUtCfU89UAk6Gc5cyX92ivqlO5'
 
 @click.group(invoke_without_command=True)
 @click.option('--num','-n', default=25, help='The number of tweets to display (should be less than 200). Defaults to 25.', required = False)
@@ -179,12 +175,19 @@ def logout():
 @main.command()
 def setup():
   """Set the configurations."""
-  apikey = click.prompt('Enter the API key')
+  click.echo('Leave blank for the current/default settings.')
+  apikey = click.prompt('Enter the API key',default="Current: "+)
   apisecret = click.prompt('Enter the API secret')
   pager = click.prompt('Turn on pager? (y/N)')
+  settings = {
+    'apikey': apikey,
+    'apisecret': apisecret,
+    'pager': pager
+  }
   try:
-    # api.retweet(id)
-    click.echo('Retweeted')
+    with open(CONFIG_FILE, 'wb') as f:
+      cPickle.dump(settings, f, cPickle.HIGHEST_PROTOCOL)
+    click.echo('Settings Saved.')
   except Exception as e:
     click.secho('Error - %s' %e, fg="red")
 

@@ -1,2 +1,6 @@
 *.pkl
 *.pyc
+build/
+dist/
+images/
+Terminal_Twitter.egg-info/
