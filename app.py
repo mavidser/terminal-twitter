@@ -9,11 +9,11 @@ import os
 
 USER_FILE = 'user.pkl'
 TWEETS_FILE = 'tweets.pkl'
-CONFIG_FILE = 'users.pkl'
+CONFIG_FILE = 'config.pkl'
 
-#Sample Keys
-API_KEY = 'UN5oKvd5GRVmhc8n5TaOCtqtJ'
-API_SECRET = 'ZRTv5uWfu3zObcJg1d3dEQbibUtCfU89UAk6Gc5cyX92ivqlO5'
+#Defaults
+DEFAULT_API_KEY = 'UN5oKvd5GRVmhc8n5TaOCtqtJ'
+DEFAULT_API_SECRET = 'ZRTv5uWfu3zObcJg1d3dEQbibUtCfU89UAk6Gc5cyX92ivqlO5'
 
 @click.group(invoke_without_command=True)
 @click.option('--num','-n', default=25, help='The number of tweets to display (should be less than 200). Defaults to 25.', required = False)
@@ -45,7 +45,7 @@ def save_user():
   except tweepy.TweepError as e:
     click.secho('Error - Failed to get request token. %s' %e, fg="red")
   click.echo('Open this link in your web browser:\n'+redirect_url)
-  verifier = raw_input('Enter the displayed PIN:')
+  verifier = raw_input('Enter the displayed PIN: ')
   try:
     auth.get_access_token(verifier)
     with open(USER_FILE, 'wb') as f:
@@ -63,6 +63,11 @@ def save_tweets(tweets):
   """Save the user loaded tweets in a file."""
   with open(TWEETS_FILE, 'wb') as f:
     cPickle.dump(tweets, f, cPickle.HIGHEST_PROTOCOL)
+
+def load_config():
+  """Load the last saved tweets details file."""
+  with open(CONFIG_FILE, 'r') as f:
+    return cPickle.load(f)
 
 def get_tweet_id(n):
   """Get the twitter id of a tweet, when supplied with the index."""
@@ -167,6 +172,22 @@ def browse(index):
     click.secho('Error - %s' %e, fg="red")
 
 @main.command()
+def reset():
+  """Logout from the application."""
+  try:
+    os.remove(USER_FILE)
+  except:
+    pass
+  try:
+    os.remove(CONFIG_FILE)
+  except:
+    pass
+  try:
+    os.remove(TWEETS_FILE)
+  except:
+    pass
+
+@main.command()
 def logout():
   """Logout from the application."""
   os.remove(USER_FILE)
@@ -175,10 +196,29 @@ def logout():
 @main.command()
 def setup():
   """Set the configurations."""
+  if API_KEY == DEFAULT_API_KEY:
+    default_apikey='Currently using default'
+  else:
+    default_apikey='Current: '+API_KEY
+  if API_SECRET == DEFAULT_API_SECRET:
+    default_apisecret='Currently using default'
+  else:
+    default_apisecret='Current: '+API_SECRET
+    
   click.echo('Leave blank for the current/default settings.')
-  apikey = click.prompt('Enter the API key',default="Current: "+)
-  apisecret = click.prompt('Enter the API secret')
-  pager = click.prompt('Turn on pager? (y/N)')
+  apikey = click.prompt('Enter the API key',default=default_apikey)
+  apisecret = click.prompt('Enter the API secret',default=default_apisecret)
+  pager = ''
+  while not(pager == 'y' or pager == 'Y' or pager == 'n' or pager == 'N'):
+    pager = click.prompt('Turn on pager?',default="y/N")
+  if pager == 'y/N':
+    pager = 'N'
+  if apikey == 'Currently using default':
+    apikey = API_KEY
+  if apisecret == 'Currently using default':
+    apisecret = API_SECRET
+  # auth = load_user()
+  # print auth.apikey
   settings = {
     'apikey': apikey,
     'apisecret': apisecret,
@@ -219,6 +259,17 @@ elif OPERATING_SYSTEM == "darwin":
 elif OPERATING_SYSTEM == "win32":
   path = os.path.expandvars('%APPDATA%/terminal-twitter/')
 USER_FILE, TWEETS_FILE, CONFIG_FILE = set_file_path(path)
+
+#Sample Keys
+try:
+  current_config = load_config()
+  API_KEY = current_config['apikey']
+  API_SECRET = current_config['apisecret']
+  PAGER = current_config['pager']
+except Exception,e:
+  API_KEY = DEFAULT_API_KEY
+  API_SECRET = DEFAULT_API_SECRET
+  PAGER = 'N'
 
 if __name__ == '__main__':
   main()
