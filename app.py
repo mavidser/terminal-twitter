@@ -15,9 +15,50 @@ CONFIG_FILE = 'config.pkl'
 DEFAULT_API_KEY = 'UN5oKvd5GRVmhc8n5TaOCtqtJ'
 DEFAULT_API_SECRET = 'ZRTv5uWfu3zObcJg1d3dEQbibUtCfU89UAk6Gc5cyX92ivqlO5'
 
+def load_config():
+  """Load the last saved tweets details file."""
+  with open(CONFIG_FILE, 'r') as f:
+    return cPickle.load(f)
+
+def set_file_path(path):
+  try:
+    os.makedirs(path)
+  except OSError as e:
+    if (e.errno == errno.EEXIST and os.path.isdir(path)) or path == '':
+      pass
+    else:
+      click.secho('Error - %s' %e, fg="red")
+  return os.path.join(path,USER_FILE),os.path.join(path,TWEETS_FILE),os.path.join(path,CONFIG_FILE)
+
+
+path=''
+if OPERATING_SYSTEM == "linux" or OPERATING_SYSTEM == "linux2":
+  path = os.path.expandvars('$HOME/.local/share/terminal-twitter/')
+elif OPERATING_SYSTEM == "darwin":
+  path = os.path.expandvars('$HOME/Library/Application Support/terminal-twitter/')
+elif OPERATING_SYSTEM == "win32":
+  path = os.path.expandvars('%APPDATA%/terminal-twitter/')
+USER_FILE, TWEETS_FILE, CONFIG_FILE = set_file_path(path)
+
+#Sample Keys
+try:
+  current_config = load_config()
+  API_KEY = current_config['apikey']
+  API_SECRET = current_config['apisecret']
+  PAGER = current_config['pager']
+  if PAGER == 'n' or PAGER == 'N':
+    PAGER = False
+  else:
+    PAGER = True
+except Exception,e:
+  API_KEY = DEFAULT_API_KEY
+  API_SECRET = DEFAULT_API_SECRET
+  PAGER = False
+
+
 @click.group(invoke_without_command=True)
 @click.option('--num','-n', default=25, help='The number of tweets to display (should be less than 200). Defaults to 25.', required = False)
-@click.option('--pager/--no-pager', default=True, help='Display tweets via pager (less). Defaults to pager.')
+@click.option('--pager/--no-pager', default=PAGER, help='Display tweets via pager (less). Defaults to pager.')
 @click.pass_context
 def main(context,num,pager):
   """A CLI to Twitter with support to display, open and compose tweeets."""
@@ -63,11 +104,6 @@ def save_tweets(tweets):
   """Save the user loaded tweets in a file."""
   with open(TWEETS_FILE, 'wb') as f:
     cPickle.dump(tweets, f, cPickle.HIGHEST_PROTOCOL)
-
-def load_config():
-  """Load the last saved tweets details file."""
-  with open(CONFIG_FILE, 'r') as f:
-    return cPickle.load(f)
 
 def get_tweet_id(n):
   """Get the twitter id of a tweet, when supplied with the index."""
@@ -240,36 +276,6 @@ def get_tweets(n,pager):
     print_home_timeline(tweets,pager)
   except Exception as e:
     click.secho('Error - %s' %e, fg="red")
-
-def set_file_path(path):
-  try:
-    os.makedirs(path)
-  except OSError as e:
-    if (e.errno == errno.EEXIST and os.path.isdir(path)) or path == '':
-      pass
-    else:
-      click.secho('Error - %s' %e, fg="red")
-  return os.path.join(path,USER_FILE),os.path.join(path,TWEETS_FILE),os.path.join(path,CONFIG_FILE)
-
-path=''
-if OPERATING_SYSTEM == "linux" or OPERATING_SYSTEM == "linux2":
-  path = os.path.expandvars('$HOME/.local/share/terminal-twitter/')
-elif OPERATING_SYSTEM == "darwin":
-  path = os.path.expandvars('$HOME/Library/Application Support/terminal-twitter/')
-elif OPERATING_SYSTEM == "win32":
-  path = os.path.expandvars('%APPDATA%/terminal-twitter/')
-USER_FILE, TWEETS_FILE, CONFIG_FILE = set_file_path(path)
-
-#Sample Keys
-try:
-  current_config = load_config()
-  API_KEY = current_config['apikey']
-  API_SECRET = current_config['apisecret']
-  PAGER = current_config['pager']
-except Exception,e:
-  API_KEY = DEFAULT_API_KEY
-  API_SECRET = DEFAULT_API_SECRET
-  PAGER = 'N'
 
 if __name__ == '__main__':
   main()
