@@ -1,4 +1,5 @@
 *.pkl
+*.swp
 *.pyc
 build/
 dist/
