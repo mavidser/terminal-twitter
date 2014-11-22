@@ -16,16 +16,17 @@ else:
   ]
 
 setup(
-  name='Terminal Twitter',
+  name='terminal-twitter',
   version='1.0',
   description='A Twitter CLI',
   author='Sid Verma',
   author_email='sid@sidverma.net',
   url='http://github.com/mavidser/tt',
-  scripts=['app.py','keys.py'],
+  scripts=['app.py'],
   install_requires=packages,
-  entry_points='''
-    [console_scripts]
-    tt=app:main
-  ''',
+  entry_points = {
+    'console_scripts': [
+      'tt = app:main'
+    ]
+  }
 )

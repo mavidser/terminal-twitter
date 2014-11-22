@@ -6,13 +6,16 @@ A Twitter CLI for hackers.
 
 Install
 ==========
+###Pip
+```bash
+$ pip install terminal-twitter
+```
 
+###Build from Source
 ```bash
 $ git clone https://github.com/mavidser/terminal-twitter.git
 $ cd terminal-twitter
 ```
-
-_Optional Step:_ It is highly recommended that you replace the keys in `keys.py` with your own keys, which you can get by [creating an app on Twitter](https://dev.twitter.com/apps) and setting the permissions to Read/Write.
 
 Now run setup.py file.
 ```bash
@@ -23,6 +26,14 @@ _Note:_ Needs Python 2.7 to run.
 
 Usage
 ====
+
+### Setup Twitter
+
+Though this step is Optional, it's recommended that you use your own keys, which you can get by [creating an app on Twitter](https://dev.twitter.com/apps) and setting the permissions to Read/Write.
+
+```bash
+$ tt setup
+```
 
 ### Display your twitter feed
 
