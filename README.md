@@ -29,7 +29,7 @@ Usage
 
 ### Setup Twitter
 
-Though this step is Optional, it's recommended that you use your own keys, which you can get by [creating an app on Twitter](https://dev.twitter.com/apps) and setting the permissions to Read/Write.
+Though this step is optional, it's recommended that you use your own keys, which you can get by [creating an app on Twitter](https://dev.twitter.com/apps) and setting the permissions to Read/Write.
 
 ```bash
 $ tt setup
